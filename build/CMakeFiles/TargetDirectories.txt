@@ -1,0 +1,3 @@
+/Users/dominika/Programowanie/semestr_9/BinPackingProblem/build/CMakeFiles/my_project.dir
+/Users/dominika/Programowanie/semestr_9/BinPackingProblem/build/CMakeFiles/edit_cache.dir
+/Users/dominika/Programowanie/semestr_9/BinPackingProblem/build/CMakeFiles/rebuild_cache.dir
