@@ -11,7 +11,7 @@ int main(){
               << Utils::getNumberOfTestFiles()
               << "] of files. Or you may create new file using 'n' letter" << std::endl;
 
-    choice = "6";
+    choice = "5";
     //usunąć - 1, 2, 4, 5, 12, 13, 14, 16, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29,
 
     int fileNumber = choice == "n" ? FileManager::createNewTestFile() : std::atoi(choice.c_str());
@@ -23,7 +23,7 @@ int main(){
                  "2 - Precise Algorithm\n"
                  "3 - Multithreading Precise Algorithm\n" << std::endl;
 
-    choice = "1";
+    choice = "3";
     int algorithmNumber = std::atoi(choice.c_str());
 
     std::vector<Item> packedItems;
@@ -38,6 +38,10 @@ int main(){
         preciseAlgorithm.start();
         packedItems = preciseAlgorithm.getItems();
 
+    } else if (algorithmNumber == 3) {
+        auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
+        preciseAlgorithm.startWithMultithreads();
+        packedItems = preciseAlgorithm.getItems();
     }
 
     FileManager::writeToFile(packedItems, binDimentions);
@@ -65,13 +69,13 @@ int main(){
 // if (selected_algorithm == 0):
 //     [solved_items, number_of_bins] = greedyAlgorithm(
 //         items, bin_width, bin_height)
-// elif (selected_algorithm == 1):    
+// elif (selected_algorithm == 1):
 //     [solved_items, number_of_bins] = preciseAlgorithm(
 //         items, bin_width, bin_height)
-// elif (selected_algorithm == 2):    
+// elif (selected_algorithm == 2):
 //     [solved_items, number_of_bins] = differentAlgorithm(
 //         items, bin_width, bin_height)
-        
+
 // print(solved_items)
 // print(number_of_bins)
 

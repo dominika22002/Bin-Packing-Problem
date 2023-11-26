@@ -1,6 +1,7 @@
 #include "precisealgorithm.h"
 
 #include <iostream>
+#include <thread>
 
 namespace {
 
@@ -141,6 +142,19 @@ std::pair<std::pair<int,int> ,int>  PreciseAlgorithm::findBestCoordinates(Item &
     return {bestCoordinates, lowestEdgeValue};
 }
 
+void PreciseAlgorithm::addItems(std::vector<Item> &packedItems) {
+    std::lock_guard<std::mutex> guard(mutex);
+    for (auto &item : packedItems){
+        items.push_back(item);
+    }
+    std::cout << "-----------------------\n Current packed items:" << std::endl;
+    for (auto &item : packedItems){
+        std::cout << item.number << std::endl;
+    }
+
+    conditionVariable.notify_all(); // Notify waiting threads about the data change
+}
+
 std::pair<int,bool> PreciseAlgorithm::addItem(Item &item, Bin &bin){
     auto [bestCoordinates, lowestEdgeValue] = findBestCoordinates(item,bin);
     item.rotate();
@@ -166,8 +180,8 @@ std::pair<int,bool> PreciseAlgorithm::addItem(Item &item, Bin &bin){
 
 int PreciseAlgorithm::packItem(std::vector<Item> &packedItems, Bin &bin, Item &item, std::vector<Item> &itemsForBin, int &bestValue, int &depth){
     if (itemsForBin.empty()){
-        std::cout << bestValue << std::endl;
-        int bestValue;
+        std::cout << "Bin "<< bin.number << " has been finished with best value: " <<  bestValue << std::endl;
+        return bestValue;
     }
 
     auto [lowestEdgeValue, itemHasBeenPacked] = addItem(item, bin);
@@ -182,7 +196,7 @@ int PreciseAlgorithm::packItem(std::vector<Item> &packedItems, Bin &bin, Item &i
 
 
     if (itemsForBin.empty()){
-        std::cout << bestValue << std::endl;
+        std::cout << "Bin "<< bin.number << " has been finished with best value: " <<  bestValue << std::endl;
         return bestValue;
     }
 
@@ -229,5 +243,43 @@ void PreciseAlgorithm::start()
             items.push_back(item);
         }
         currentBin++;
+    }
+}
+
+void PreciseAlgorithm::startPacking(std::vector<Item> packedItems, Bin bin, Item item, std::vector<Item> itemsForBin, int bestValue, int depth) {
+    packItem(packedItems, bin, item, itemsForBin, bestValue, depth);
+    addItems(packedItems);
+}
+
+void PreciseAlgorithm::startWithMultithreads()
+{
+    std::sort(items.begin(), items.end(), byArea());
+    for (auto &item : items) {
+        std::cout << item.number << " "<< item.dimentions.first << " " << item.dimentions.second << std::endl;
+    }
+
+    const auto downLimit = getDownLimit(items, binDimentions);
+
+    for (int binNumber = 0; binNumber < downLimit; binNumber++) {
+        bins.push_back(Bin{.dimentions = binDimentions, .number = binNumber + 1, .matrix = Matrix(binDimentions)});
+    }
+
+    auto itemsForBins =  divideItemsToBins(items, downLimit);
+    items.clear();
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < itemsForBins.size(); i++){
+        std::vector<Item> packedItems;
+        auto bin = bins[i];
+        auto item = itemsForBins[i][0];
+        int bestValue = WORST_VALUE;
+        int depth = 0;
+
+        std::thread thread(&PreciseAlgorithm::startPacking, this, packedItems, bin, item, itemsForBins[i], bestValue, depth);
+        threads.push_back(std::move(thread));
+    }
+
+    for (auto &thread: threads){
+        thread.join();
     }
 }
