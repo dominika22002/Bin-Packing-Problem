@@ -49,14 +49,23 @@ print("Try to plot solution!")
 
 plot_patterns = {1:(1,1), 2:(1,2), 3:(1,3), 4:(2,2), 5:(2,3), 6:(2,3), 7:(2,4), 8:(2,4), 9:(3,3)}
 plots = plot_patterns[numberOfBins]
-fig, ax = plt.subplots(plots[0], plots[1])
+fig, ax = plt.subplots(plots[0], plots[1], figsize=(12, 7))
 
 fig.suptitle("aaa", fontsize=10)
 
 # Define colors list
 colors = plt.get_cmap("Set1").colors
-
+colors = [
+    '#6A0DAD', '#FF5500', '#2E8B57', '#9932CC', '#FF1493',
+    '#00FFFF', '#800080', '#FFFF00', '#008080', '#FFD700',
+    '#7CFC00', '#00FF00', '#000080', '#FF4500', '#FF00FF',
+    '#808080', '#FF6347', '#4B0082', '#008000', '#FFA500',
+    '#0000FF', '#FA8072', '#00CED1', '#7FFF00', '#FF69B4'
+]
+currentcolor = 0
 for p in items:
+    if currentcolor == len(colors)-1:
+        currentcolor = 0
     # Define Matplotlib figure and axis
     ax = plt.subplot(plots[0], plots[1], p.binNumber)
     # Define pallet dimensions
@@ -66,7 +75,7 @@ for p in items:
     ax.autoscale(enable=False)
     ax.set_aspect('equal', adjustable='box')
     # Create title and labels
-    ax.set_title(f"pallet {p.binNumber}")
+    # ax.set_title(f"pallet {p.binNumber}")
     ax.set_xlabel(f"{pallet_dimensions[0]}")
     ax.set_ylabel(f"{pallet_dimensions[1]}")
 
@@ -75,7 +84,7 @@ for p in items:
 
     # Create rectangle representing package
     rectangle = Rectangle((p.x, p.y), package_width, package_height,
-                           facecolor = colors[random.randint(0, len(colors)-1)],
+                           facecolor = colors[currentcolor],
                            fill=True,
                            alpha=0.5,
                            )
@@ -89,7 +98,7 @@ for p in items:
 
     # Add package_id to ploted rectangle
     ax.annotate(f"{p.number}", rectangle.get_center(), color="#333333", weight='bold', fontsize=8, ha='center', va='center')
-
+    currentcolor = currentcolor + 1
 # Delete empty plots if 5 or 7 pallets
 if numberOfBins == 5 or numberOfBins == 7:
     ax = plt.subplot(plots[0], plots[1], numberOfBins + 1)
@@ -97,6 +106,8 @@ if numberOfBins == 5 or numberOfBins == 7:
 
 # Display plot
 plt.show()
+
+plt.tight_layout()
 
 
 

@@ -4,15 +4,55 @@
 #include "filemanager/filemanager.h"
 #include "filemanager/utils.h"
 
-int main(){
+#include <chrono>
+#include <functional>
+
+namespace
+{
+
+    int getTimeOf(std::function<void()> function)
+    {
+        auto start_time = std::chrono::high_resolution_clock::now();
+        function();
+        auto end_time = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+
+        return static_cast<int>(duration.count());
+    }
+
+    void createTimeRaport(int fileNumber)
+    {
+        int greedyTime = getTimeOf([fileNumber]() { 
+                        const auto [items, binDimentions] = FileManager::getValuesFromFile(fileNumber);
+                        auto greedyAlgorithm = GreedyAlgorithm(items, binDimentions);
+                        greedyAlgorithm.start(); });
+
+        int preciseTime = getTimeOf([fileNumber]() {             
+                        const auto [items, binDimentions] = FileManager::getValuesFromFile(fileNumber);
+                        auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
+                        preciseAlgorithm.start(); });
+
+        int multiPreciseTime = getTimeOf([fileNumber]() {             
+                        const auto [items, binDimentions] = FileManager::getValuesFromFile(fileNumber);
+                        auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
+                        preciseAlgorithm.startWithMultithreads(); });
+        
+        std::cout << "\nDla pliku nr " << fileNumber << " :\t" << greedyTime << "\t"<< preciseTime << "\t"<< multiPreciseTime << std::endl;
+    
+    }
+}
+
+int main(int argc, char *argv[])
+{
+    createTimeRaport(std::atoi(argv[1]));
+    return 0;
     std::string choice = "";
     std::cout << "--------------------------------" << std::endl;
     std::cout << "Choose which file you want to use. You have a range [1-"
               << Utils::getNumberOfTestFiles()
               << "] of files. Or you may create new file using 'n' letter" << std::endl;
 
-    choice = "5";
-    //usunąć - 1, 2, 4, 5, 12, 13, 14, 16, 18, 19, 20, 21, 22, 23, 25, 26, 27, 28, 29,
+    choice = argv[1];
 
     int fileNumber = choice == "n" ? FileManager::createNewTestFile() : std::atoi(choice.c_str());
     const auto [items, binDimentions] = FileManager::getValuesFromFile(fileNumber);
@@ -23,7 +63,7 @@ int main(){
                  "2 - Precise Algorithm\n"
                  "3 - Multithreading Precise Algorithm\n" << std::endl;
 
-    choice = "3";
+    choice = argv[2];
     int algorithmNumber = std::atoi(choice.c_str());
 
     std::vector<Item> packedItems;

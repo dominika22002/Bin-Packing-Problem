@@ -63,6 +63,16 @@
         "memory_resource": "cpp",
         "utility": "cpp",
         "deque": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "__errc": "cpp",
+        "__mutex_base": "cpp",
+        "__string": "cpp",
+        "clocale": "cpp",
+        "complex": "cpp",
+        "cwctype": "cpp",
+        "iostream": "cpp",
+        "ratio": "cpp",
+        "sstream": "cpp",
+        "cinttypes": "cpp"
     }
 }

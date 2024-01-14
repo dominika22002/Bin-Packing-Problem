@@ -9,8 +9,8 @@ constexpr int MAX_BIN_SIZE = 40;
 constexpr int MIN_BIN_SIZE = int(MAX_BIN_SIZE/2);
 
 // Range of number of bins
-constexpr int MAX_BIN_NUMBER = 5;
-constexpr int MIN_BIN_NUMBER = 5;
+constexpr int MAX_BIN_NUMBER = 1;
+constexpr int MIN_BIN_NUMBER = 1;
 
 // Minimal size of item
 constexpr int MIN_ITEM_SIZE = 3;
@@ -30,8 +30,6 @@ std::vector<Item> generateItems(const int binWidth, const int binHeight, const i
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> distr(MIN_ITEM_SIZE, int(std::min(binWidth, binHeight)/2));
-
-    const auto dimention1 = distr(gen);
 
     const int binArea = binWidth * binHeight;
     const int maxBinArea = binWidth * binHeight * numberOfBins;
