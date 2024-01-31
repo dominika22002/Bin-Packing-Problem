@@ -6,6 +6,31 @@
 
 #include <chrono>
 #include <functional>
+#include <immintrin.h>
+#include <intrin.h>
+
+#if defined(_MSC_VER) && defined(_M_X64)
+    // Dla MSVC na architekturze x64
+    #include <intrin.h>
+    #define hasSSE2() static_cast<bool>(__cpuidex(static_cast<int*>(0), 0x00000001, 0).edx & (1 << 26))
+#elif defined(__SSE2__)
+    // Dla innych kompilatorów obsługujących SSE2
+    #define hasSSE2() true
+#else
+    #define hasSSE2() false
+#endif
+
+bool hasAVX2() {
+    int cpuInfo[4];
+    __cpuid(cpuInfo, 0);
+
+    if (cpuInfo[0] < 7)
+        return false;
+
+    __cpuidex(cpuInfo, 7, 0);
+
+    return (cpuInfo[1] & (1 << 5)) != 0;
+}
 
 namespace
 {
@@ -36,16 +61,46 @@ namespace
                         const auto [items, binDimentions] = FileManager::getValuesFromFile(fileNumber);
                         auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
                         preciseAlgorithm.startWithMultithreads(); });
+
+        int vectoriPreciseTime = getTimeOf([fileNumber]() {             
+                const auto [items, binDimentions] = FileManager::getValuesFromFile(fileNumber);
+                auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
+                preciseAlgorithm.startWithVectorization(); });
         
-        std::cout << "\nDla pliku nr " << fileNumber << " :\t" << greedyTime << "\t"<< preciseTime << "\t"<< multiPreciseTime << std::endl;
+        std::cout << "\nDla pliku nr " << fileNumber << " :\t" << greedyTime << "\t"<< preciseTime << "\t"<< multiPreciseTime << "\t"<< vectoriPreciseTime << std::endl;
     
     }
 }
 
 int main(int argc, char *argv[])
 {
+    #ifdef __AVX2__
+        std::cout << "AVX2 is supported by the compiler.\n";
+    #else
+        std::cout << "AVX2 is not supported by the compiler.\n";
+    #endif
+
+    if (hasAVX2()) {
+        std::cout << "AVX2 is supported by the hardware." << std::endl;
+    } else {
+        std::cout << "AVX2 is not supported by the hardware." << std::endl;
+    }
+
+    #ifdef __SSE2__
+        std::cout << "SSE2 is supported by the compiler." << std::endl;
+    #else
+        std::cout << "SSE2 is not supported by the compiler." << std::endl;
+    #endif
+
+    #if hasSSE2()
+        std::cout << "SSE2 is supported by the hardware." << std::endl;
+    #else
+        std::cout << "SSE2 is not supported by the hardware." << std::endl;
+    #endif
+
     createTimeRaport(std::atoi(argv[1]));
     return 0;
+    
     std::string choice = "";
     std::cout << "--------------------------------" << std::endl;
     std::cout << "Choose which file you want to use. You have a range [1-"
@@ -61,7 +116,8 @@ int main(int argc, char *argv[])
     std::cout << "Choose your algorithm: \n"
                  "1 - Greedy Algorithm\n"
                  "2 - Precise Algorithm\n"
-                 "3 - Multithreading Precise Algorithm\n" << std::endl;
+                 "3 - Multithreading Precise Algorithm\n"
+                 "4 - Vectorization Precise Algorithm\n" << std::endl;
 
     choice = argv[2];
     int algorithmNumber = std::atoi(choice.c_str());
@@ -81,6 +137,10 @@ int main(int argc, char *argv[])
     } else if (algorithmNumber == 3) {
         auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
         preciseAlgorithm.startWithMultithreads();
+        packedItems = preciseAlgorithm.getItems();
+    } else if (algorithmNumber == 4) {
+        auto preciseAlgorithm = PreciseAlgorithm(items, binDimentions);
+        preciseAlgorithm.startWithVectorization();
         packedItems = preciseAlgorithm.getItems();
     }
 

@@ -1,5 +1,10 @@
 #pragma once
 #include "../bin.h"
+#include <mutex>
+#include <condition_variable>
+#include <algorithm>
+#include <numeric>
+#include <immintrin.h>
 
 class PreciseAlgorithm final
 {
@@ -19,21 +24,17 @@ class PreciseAlgorithm final
     void addItems(std::vector<Item> &packedItems);
     void startPacking(std::vector<Item> packedItems, Bin bin, Item item, std::vector<Item> itemsForBin, int bestValue, int depth);
 
+    // Vectorization
+    int packItemVectorization(std::vector<Item> &packedItems, Bin &bin, Item &item, std::vector<Item> &itemsForBin, int &bestValue, int &depth);
+    int getDownLimitVectorization(const std::vector<Item> &items, const std::pair<int, int> binDimentions);
+
 public:
     void start();
     void startWithMultithreads();
     const std::vector<Item> &getItems() const ;
     const std::vector<Bin> &getBins() const ;
+    void startWithVectorization();
 
     PreciseAlgorithm(const std::vector<Item> &newItems, const std::pair<int, int> newBinDimentions);
 };
-
-
-
-
-
-
-
-
-
 

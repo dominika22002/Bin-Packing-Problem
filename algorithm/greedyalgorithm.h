@@ -2,6 +2,7 @@
 #include "../bin.h"
 
 #include <iostream>
+#include <algorithm>
 
 class GreedyAlgorithm final
 {
